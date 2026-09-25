@@ -17,6 +17,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(multer().none());
 app.use(cookieParser());
 
+
+// for intial health check--> app is running or not
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
