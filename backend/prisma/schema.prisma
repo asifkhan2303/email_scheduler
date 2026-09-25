@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  googleId  String?  @unique
+  email     String   @unique
+  // scrypt hash for email + password accounts (null for Google-only users)
+  passwordHash String?
+  name      String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id     String @id @default(cuid())
+  userId String
+
+  subject String @db.VarChar(255)
+  body    String @db.Text
+
+  // "rotate" (spread over all configured senders) or a single sender address
+  sender String
+
+  startTime   DateTime
+  delayMs     Int
+  hourlyLimit Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails Email[]
+}
+
+model Email {
+  id         String @id @default(cuid())
+  campaignId String
+
+  recipient String
+  sender    String
+  subject   String @db.VarChar(255)
+  body      String @db.Text
+
+  // scheduled -> processing -> sent | failed
+  status        String    @default("scheduled")
+  scheduledTime DateTime
+  // time the final delivery attempt finished (set for both sent and failed)
+  sentTime      DateTime?
+  attempts      Int       @default(0)
+  messageId     String?
+  previewUrl    String?   @db.VarChar(500)
+  error         String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([scheduledTime])
+}
