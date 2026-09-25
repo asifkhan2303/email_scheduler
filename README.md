@@ -32,7 +32,6 @@ reachinbox-scheduler/
 │   │   ├── pages/         # Login, Dashboard
 │   │   ├── services/api.ts, lib/ (format, emails, html, constants), types/email.ts
 │   └── .env.example
-├── docker-compose.yml     # optional Redis + MySQL
 └── README.md
 ```
 
@@ -46,20 +45,8 @@ Before that process can boot, MySQL and Redis both need to be reachable.
 
 ### 1a. Get MySQL + Redis running
 
-**Option A — Docker (fastest):**
-
-```bash
-# from the project root, the same folder as docker-compose.yml
-docker compose up -d
-docker compose ps        # both services should show "running"
-```
-
-This gives you MySQL 8 on `localhost:3306` (database `reachinbox`, root
-password defaults to `password`) and Redis 7 on `localhost:6379`.
-
-**Option B — your own local MySQL 8 / Redis 7:**
-
-Install and start both yourself, then create the database:
+Install MySQL 8 and Redis 7 locally and start both, then create the
+database:
 
 ```bash
 mysql -u root -p
@@ -160,7 +147,7 @@ step above to generate more accounts and list them in `ETHEREAL_ACCOUNTS`.
 | `PORT` | Port the Express API listens on | default `4000` |
 | `FRONTEND_URL` | Used for CORS | `http://localhost:5173` for local dev |
 | `DATABASE_URL` | MySQL connection string | `mysql://<user>:<password>@<host>:<port>/reachinbox` — matches whatever you set up in [1a](#1a-get-mysql--redis-running) |
-| `REDIS_HOST` / `REDIS_PORT` | Redis for BullMQ + rate-limit counters | `127.0.0.1` / `6379` for Docker, local Redis, WSL2, or Memurai |
+| `REDIS_HOST` / `REDIS_PORT` | Redis for BullMQ + rate-limit counters | `127.0.0.1` / `6379` for local Redis, WSL2, or Memurai |
 | `GOOGLE_CLIENT_ID` | Google OAuth Web client ID | Google Cloud Console → APIs & Services → Credentials → Create OAuth client ID (Web application); add `http://localhost:5173` as an authorized JavaScript origin. Same value goes in the frontend's `VITE_GOOGLE_CLIENT_ID`. Optional — skip for email/password-only auth. |
 | `JWT_SECRET` | Signs the session cookie | any long random string, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `ETHEREAL_HOST` / `ETHEREAL_PORT` | Ethereal SMTP endpoint | `smtp.ethereal.email` / `587` (defaults, don't change) |
@@ -204,9 +191,8 @@ the actual sending out over time automatically.
 MySQL is the source of truth; the BullMQ job only carries an email ID. On a
 normal restart:
 
-- Redis (backed by Docker's `--appendonly yes`, or your local Redis's own
-  persistence) still has every delayed job, so **nothing needs to be
-  re-seeded**.
+- Redis's own persistence (e.g. AOF, if enabled) still has every delayed job,
+  so **nothing needs to be re-seeded**.
 - The worker restarts and keeps consuming exactly where it left off.
 
 On boot (`backend/src/queue/recovery.ts`), the server also self-heals two
@@ -348,8 +334,7 @@ coverage/
 
 ## 9. Assumptions & trade-offs
 
-- Docker is provided (`docker-compose.yml`) but not required — any local
-  MySQL 8 / Redis 7 (or Windows alternatives like WSL2 or Memurai) works.
+- Any local MySQL 8 / Redis 7 works (on Windows, WSL2 or Memurai for Redis).
 - The rich-text compose editor uses the browser's built-in `execCommand`.
   It's deprecated but still supported everywhere Chrome/Firefox/Safari ship,
   and keeps the editor dependency-free; a production version would likely
