@@ -1,4 +1,4 @@
-# ReachInbox Scheduler — Windows Setup (Redis = Memurai)
+# ReachInbox Scheduler — Windows Setup (Redis = Memurai) 
 
 Setup guide for Windows users who don't want Docker and are using **Memurai**
 (a native Windows, Redis-compatible service) for Redis.
