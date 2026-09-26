@@ -1,7 +1,7 @@
-import { ScheduledEmail, SentEmail } from "../types/email";
+import { EmailSummary } from "../types/email";
 
 interface EmailTableProps {
-  emails: ScheduledEmail[] | SentEmail[];
+  emails: EmailSummary[];
   type: "scheduled" | "sent";
 }
 
@@ -39,11 +39,7 @@ export function EmailTable({ emails, type }: EmailTableProps) {
               <td className="px-5 py-4">{email.recipient}</td>
               <td className="px-5 py-4">{email.subject}</td>
               <td className="px-5 py-4 text-gray-500">
-                {formatDate(
-                  type === "scheduled"
-                    ? email.scheduled_time
-                    : (email as SentEmail).sent_time
-                )}
+                {formatDate(type === "scheduled" ? email.scheduled_time : email.sent_time)}
               </td>
               <td className="px-5 py-4">
                 <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs capitalize">

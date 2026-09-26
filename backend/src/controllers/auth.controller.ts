@@ -13,7 +13,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 function setSessionCookie(res: Response, token: string) {
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: env.isProduction ? "none" : "lax",
     secure: env.isProduction,
     maxAge: 7 * 24 * 60 * 60 * 1000
   });

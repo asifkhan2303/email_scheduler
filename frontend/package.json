@@ -2,6 +2,7 @@
   "name": "reachinbox-scheduler-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
